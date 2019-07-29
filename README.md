@@ -1,0 +1,2 @@
+# Manage-Your-Money-API
+An ultimate money management app where the consumer can either provide an estimated income category or provide exact income they earn on a weekly/monthly/yearly basis and then, choose to add their expenditures and/or credit card balances or any other thing that they spend their money on. Then, they can go in and ask the app if making a certain purchase is going to put them behind by how much when it comes to spending on necessities or luxuries. 
