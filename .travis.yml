@@ -1,0 +1,22 @@
+language: node_js
+node_js:
+ - "11.13.0"
+
+notifications:
+  email: 
+    false
+
+services:
+  - sqlite3
+env:
+  global:
+  - NODE_ENV=test
+  
+before_install:
+  - psql -c 'create database travis_ci_mym;' -U postgres
+  - npm i -g npm@6.9.0
+
+script:
+  - npm test
+
+
