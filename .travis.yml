@@ -1,0 +1,30 @@
+language: node_js
+node_js:
+ - "11.13.0"
+
+notifications:
+  email: 
+    false
+
+services:
+  - postgresql
+env:
+  global:
+  - NODE_ENV=test
+  
+before_install:
+  - psql -c 'create database travis_ci_mym;' -U postgres
+  - npm i -g npm@6.9.0
+
+script:
+  - npm test
+
+after_success:
+- npm run coveralls
+- npm run report-coverage
+
+jobs:
+  include:
+    - stage: Produce Coverage
+      node_js: node
+      script: jest --coverage && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage

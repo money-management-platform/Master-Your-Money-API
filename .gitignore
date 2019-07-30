@@ -1,0 +1,17 @@
+# dotenv environment variables file
+.env
+.env.test
+
+# Optional REPL history
+.node_repl_history
+
+.eslintcache
+
+node_modules/
+jspm_packages/
+
+# Coverage directory used by tools like istanbul
+coverage
+
+# nyc test coverage
+.nyc_output
