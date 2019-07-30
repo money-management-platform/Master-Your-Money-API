@@ -6,10 +6,9 @@ export const getById = id => db('users')
   .where({ id })
   .first();
 
-export const getByUsername = username => db('users')
-  .where({ username })
+export const getUserByEmail = email => db('users')
+  .where({ email })
   .first();
-
 
 export const insert = user => db('users')
   .insert(user)
