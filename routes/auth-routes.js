@@ -56,5 +56,28 @@ userRoutes.get('/', (req, res) => {
     });
 });
 
+userRoutes.post('/login', async (req, res) => {
+  const { email, password: pwd } = req.body;
+  const validUser = await getUserByEmail(email);
+  const validPassword = validUser.password;
+  const user = {
+    sub: validUser.id,
+    email: validUser.email,
+  };
+
+  try {
+    const comparePassword = await bcrypt.compareSync(pwd, validPassword);
+
+    if (validUser && comparePassword) {
+      const token = generateToken(validUser);
+      return res.status(200).json({ message: `Welcome ${validUser.email}!, login successful`, token });
+    }
+    return res.status(400).json({ message: 'wrong email or password, login not successfully' });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ error: 'The users information could not be retrieved.' });
+  }
+});
 
 export default userRoutes;
