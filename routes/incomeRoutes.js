@@ -50,18 +50,25 @@ incomeRoutes.get('/', async (req, res) => {
 });
 
 incomeRoutes.get('/:id/users', async (req, res) => {
+  const user = await getById(req.params.id);
+  const totalIncome = await getTotalIncome(req.params.id);
+  const formatTotalIncome = Object.values(totalIncome[0]).toString();
   try {
-    const totalIncome = await getTotalIncome(req.params.id);
-    const formatTotalIncome = Object.values(totalIncome[0]).toString();
-    if (totalIncome) {
-      const user = await getById(req.params.id);
-      res.json({ message: `Hi ${user.lastname} ${user.firstname}! your total income is: $${formatTotalIncome}` });
-    } else {
-      res.status(404).json({ message: 'Could not find totalIncome with given id.' });
+    if (typeof user === 'undefined') {
+      return res.status(404).json({ message: `Could not find totalIncome with given ${req.params.id}` });
+    }
+
+    if (Number(formatTotalIncome) === 0) {
+      return res.json({ message: `Hi ${user.lastname} ${user.firstname}! your total income is $0` });
+    }
+
+    if (user) {
+      if (formatTotalIncome !== 'undefined') {
+        return res.json({ message: `Hi ${user.lastname} ${user.firstname}! your total income is: $${formatTotalIncome}` });
+      }
     }
   } catch (err) {
-    console.log(err);
-    res.status(500).json({ message: 'Failed to get totalIncomes' });
+    return res.status(500).json({ message: 'Failed to get totalIncomes' });
   }
 });
 
@@ -74,7 +81,6 @@ incomeRoutes.get('/:id', async (req, res) => {
       res.status(404).json({ message: `Could not find income with given ${req.params.id}` });
     }
   } catch (err) {
-    console.log(err);
     res.status(500).json({ message: 'Failed to get incomes' });
   }
 });
