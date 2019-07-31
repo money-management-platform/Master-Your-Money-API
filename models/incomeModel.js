@@ -4,10 +4,24 @@ import db from '../utils/dbConfig';
 // FROM incomes
 // WHERE user_id=4;
 
-export const getIncome = () => db('incomes');
+// export function getProject(id) {
+//   return db('actions')
+//     .join('projects', 'projects.id', 'project_id')
+//     .select('actions.*', 'projects.*')
+//     .where('project_id', id);
+// }
+
+export const getIncome = () => db('incomes')
+  .join('bases', 'bases.id', 'basis_id');
+
+// SELECT * , bases.basis
+// FROM incomes
+// INNER JOIN bases ON incomes.basis_id=bases.id
+// where incomes.id = 1;
 
 export const getIncomeById = id => db('incomes')
-  .where({ id })
+  .join('bases', 'incomes.basis_id', 'bases.id')
+  .where({ 'incomes.id': id })
   .first();
 
 // eslint-disable-next-line camelcase

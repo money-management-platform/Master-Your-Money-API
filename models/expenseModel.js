@@ -1,9 +1,11 @@
 import db from '../utils/dbConfig';
 
-export const getExpense = () => db('expenses');
+export const getExpense = () => db('expenses')
+  .join('categories', 'categories.id', 'category_id');
 
 export const getExpenseById = id => db('expenses')
-  .where({ id })
+  .join('categories', 'expenses.category_id', 'categories.id')
+  .where({ 'expenses.id': id })
   .first();
 
 // eslint-disable-next-line camelcase

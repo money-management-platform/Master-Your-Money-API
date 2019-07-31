@@ -11,6 +11,9 @@ exports.seed = function (knex) {
         {
           firstname: 'Jane', lastname: 'Doe', email: 'janedoe@me.com', password: '1234567', address: 'Lambda School', occupation: 'Lambda Founder', phone: '12345678901', marital_status: 'Married',
         },
+        {
+          firstname: 'Johnson', lastname: 'Doe', email: 'johnsondoe@me.com', password: '1234567', address: 'Lambda School', occupation: 'Lambda Founder', phone: '12345678901', marital_status: 'Single',
+        },
 
       ]);
     });

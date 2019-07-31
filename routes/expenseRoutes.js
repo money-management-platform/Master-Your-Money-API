@@ -11,25 +11,26 @@ import {
 const expenseRoutes = express.Router();
 
 expenseRoutes.post('/:id', async (req, res) => {
-  const user = await getById(req.params.id);
-  const { description, amount } = req.body;
+  const { category_id, description, amount } = req.body;
   const expense = {
     user_id: req.params.id,
+    category_id,
     description,
     amount,
   };
-
+  const user = await getById(req.params.id);
+  const newExpense = await insert(expense);
+  const expenseDetails = await getExpenseById(newExpense.id);
   try {
     if (user) {
       if (expense) {
-        const newExpense = await insert(expense);
-        const expenseDetails = await getExpenseById(newExpense.id);
         res.status(201).json({ message: 'new expense is posted successfully', data: expenseDetails });
       }
     } else {
       res.status(404).json({ message: `The user with the specified ID ${req.params.id} does not exist.` });
     }
   } catch (error) {
+    console.log(error);
     res.status(500).json({ error: 'There was an error while saving the expense to the database' });
   }
 });
@@ -53,6 +54,9 @@ expenseRoutes.get('/:id/users', async (req, res) => {
     const formatTotalExpense = Object.values(totalExpense[0]).toString();
     const user = await getById(req.params.id);
     if (user) {
+      if (Number(formatTotalExpense) === 0) {
+        return res.json({ message: `Hi ${user.lastname} ${user.firstname}! your total income is $0` });
+      }
       if (totalExpense && totalExpense !== 0) {
         res.json({ message: `Hi ${user.lastname} ${user.firstname}! your total expense is: $${formatTotalExpense}` });
       } else {
@@ -62,6 +66,7 @@ expenseRoutes.get('/:id/users', async (req, res) => {
       res.status(404).json({ message: `Hi there!, the user with id:${req.params.id} does not exist` });
     }
   } catch (err) {
+    console.log(err);
     res.status(500).json({ message: 'Failed to get totalExpenses' });
   }
 });

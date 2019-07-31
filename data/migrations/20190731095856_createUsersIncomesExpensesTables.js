@@ -1,3 +1,4 @@
+
 /* eslint-disable func-names */
 
 exports.up = function (knex) {
@@ -25,24 +26,31 @@ exports.up = function (knex) {
         .inTable('users')
         .onUpdate('CASCADE')
         .onDelete('CASCADE');
+      table.integer('basis_id')
+        .unsigned()
+        .notNullable()
+        .references('id')
+        .inTable('bases')
+        .onUpdate('CASCADE')
+        .onDelete('CASCADE');
       table.timestamp('created_at').defaultTo(knex.fn.now());
     })
     .createTable('bases', (table) => {
       table.increments();
-      table.string('basis_title').notNullable();
-      table.integer('income_id')
-        .unsigned()
-        .notNullable()
-        .references('id')
-        .inTable('incomes')
-        .onUpdate('CASCADE')
-        .onDelete('CASCADE');
+      table.string('basis').notNullable();
       table.timestamp('created_at').defaultTo(knex.fn.now());
     })
     .createTable('expenses', (table) => {
       table.increments();
       table.text('description').notNullable();
       table.decimal('amount', 10, 2).notNullable();
+      table.integer('category_id')
+        .unsigned()
+        .notNullable()
+        .references('id')
+        .inTable('categories')
+        .onUpdate('CASCADE')
+        .onDelete('CASCADE');
       table.integer('user_id')
         .unsigned()
         .notNullable()
@@ -54,8 +62,6 @@ exports.up = function (knex) {
     })
     .createTable('summaries', (table) => {
       table.increments();
-      table.decimal('total_income', 10, 2);
-      table.decimal('total_expenses', 10, 2);
       table.decimal('total_balance', 10, 2);
       table.integer('user_id')
         .unsigned()
@@ -66,18 +72,9 @@ exports.up = function (knex) {
         .onDelete('CASCADE');
       table.timestamp('created_at').defaultTo(knex.fn.now());
     })
-    .createTable('purchases', (table) => {
+    .createTable('categories', (table) => {
       table.increments();
-      table.text('description');
-      table.decimal('amount', 10, 2);
-      table.text('priority');
-      table.integer('user_id')
-        .unsigned()
-        .notNullable()
-        .references('id')
-        .inTable('users')
-        .onUpdate('CASCADE')
-        .onDelete('CASCADE');
+      table.text('category');
       table.timestamp('created_at').defaultTo(knex.fn.now());
     });
 };
@@ -88,5 +85,6 @@ exports.down = function (knex) {
     .dropTableIfExists('incomes')
     .dropTableIfExists('bases')
     .dropTableIfExists('expenses')
-    .dropTableIfExists('purchases');
+    .dropTableIfExists('summaries')
+    .dropTableIfExists('categories');
 };

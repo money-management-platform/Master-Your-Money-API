@@ -13,9 +13,10 @@ const incomeRoutes = express.Router();
 
 incomeRoutes.post('/:id', async (req, res) => {
   const user = await getById(req.params.id);
-  const { description, estimate } = req.body;
+  const { basis_id, description, estimate } = req.body;
   const income = {
     user_id: req.params.id,
+    basis_id,
     description,
     estimate,
   };
@@ -25,7 +26,7 @@ incomeRoutes.post('/:id', async (req, res) => {
       if (income) {
         const newIncome = await insert(income);
         const incomeDetails = await getIncomeById(newIncome.id);
-        res.status(201).json({ message: 'new income is posted successfully', data: incomeDetails });
+        res.status(201).json({ message: 'new income is created successfully', data: incomeDetails });
       }
     } else {
       res.status(404).json({ message: `The user with the specified ID ${req.params.id} does not exist.` });
@@ -49,18 +50,25 @@ incomeRoutes.get('/', async (req, res) => {
 });
 
 incomeRoutes.get('/:id/users', async (req, res) => {
+  const user = await getById(req.params.id);
+  const totalIncome = await getTotalIncome(req.params.id);
+  const formatTotalIncome = Object.values(totalIncome[0]).toString();
   try {
-    const totalIncome = await getTotalIncome(req.params.id);
-    const formatTotalIncome = Object.values(totalIncome[0]).toString();
-    if (totalIncome) {
-      const user = await getById(req.params.id);
-      res.json({ message: `Hi ${user.lastname} ${user.firstname}! your total income is: $${formatTotalIncome}` });
-    } else {
-      res.status(404).json({ message: 'Could not find totalIncome with given id.' });
+    if (typeof user === 'undefined') {
+      return res.status(404).json({ message: `Could not find totalIncome with given ${req.params.id}` });
+    }
+
+    if (Number(formatTotalIncome) === 0) {
+      return res.json({ message: `Hi ${user.lastname} ${user.firstname}! your total income is $0` });
+    }
+
+    if (user) {
+      if (formatTotalIncome !== 'undefined') {
+        return res.json({ message: `Hi ${user.lastname} ${user.firstname}! your total income is: $${formatTotalIncome}` });
+      }
     }
   } catch (err) {
-    console.log(err);
-    res.status(500).json({ message: 'Failed to get totalIncomes' });
+    return res.status(500).json({ message: 'Failed to get totalIncomes' });
   }
 });
 
