@@ -12,9 +12,10 @@ const expenseRoutes = express.Router();
 
 expenseRoutes.post('/:id', async (req, res) => {
   const user = await getById(req.params.id);
-  const { description, amount } = req.body;
+  const { category_id, description, amount } = req.body;
   const expense = {
     user_id: req.params.id,
+    category_id,
     description,
     amount,
   };
@@ -62,6 +63,7 @@ expenseRoutes.get('/:id/users', async (req, res) => {
       res.status(404).json({ message: `Hi there!, the user with id:${req.params.id} does not exist` });
     }
   } catch (err) {
+    console.log(err);
     res.status(500).json({ message: 'Failed to get totalExpenses' });
   }
 });

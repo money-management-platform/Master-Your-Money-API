@@ -13,9 +13,10 @@ const incomeRoutes = express.Router();
 
 incomeRoutes.post('/:id', async (req, res) => {
   const user = await getById(req.params.id);
-  const { description, estimate } = req.body;
+  const { basis_id, description, estimate } = req.body;
   const income = {
     user_id: req.params.id,
+    basis_id,
     description,
     estimate,
   };
@@ -25,7 +26,7 @@ incomeRoutes.post('/:id', async (req, res) => {
       if (income) {
         const newIncome = await insert(income);
         const incomeDetails = await getIncomeById(newIncome.id);
-        res.status(201).json({ message: 'new income is posted successfully', data: incomeDetails });
+        res.status(201).json({ message: 'new income is created successfully', data: incomeDetails });
       }
     } else {
       res.status(404).json({ message: `The user with the specified ID ${req.params.id} does not exist.` });
@@ -73,6 +74,7 @@ incomeRoutes.get('/:id', async (req, res) => {
       res.status(404).json({ message: `Could not find income with given ${req.params.id}` });
     }
   } catch (err) {
+    console.log(err);
     res.status(500).json({ message: 'Failed to get incomes' });
   }
 });
