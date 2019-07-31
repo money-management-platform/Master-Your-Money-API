@@ -1,5 +1,6 @@
 import express from 'express';
 import { getById } from '../models/auth-models';
+import verifyToken from '../middlewares/verifyToken';
 import {
   insert,
   getExpenseById,
@@ -10,18 +11,18 @@ import {
 
 const expenseRoutes = express.Router();
 
-expenseRoutes.post('/:id', async (req, res) => {
+expenseRoutes.post('/', verifyToken, async (req, res) => {
   const { category_id, description, amount } = req.body;
   const expense = {
-    user_id: req.params.id,
+    user_id: req.decodedToken.sub,
     category_id,
     description,
     amount,
   };
-  const user = await getById(req.params.id);
-  const newExpense = await insert(expense);
-  const expenseDetails = await getExpenseById(newExpense.id);
   try {
+    const user = await getById(req.params.id);
+    const newExpense = await insert(expense);
+    const expenseDetails = await getExpenseById(newExpense[0], req.decodedToken.sub);
     if (user) {
       if (expense) {
         res.status(201).json({ message: 'new expense is posted successfully', data: expenseDetails });
@@ -35,9 +36,9 @@ expenseRoutes.post('/:id', async (req, res) => {
   }
 });
 
-expenseRoutes.get('/', async (req, res) => {
+expenseRoutes.get('/', verifyToken, async (req, res) => {
   try {
-    const expense = await getExpense();
+    const expense = await getExpense(req.decodedToken.sub);
     if (expense) {
       res.json(expense);
     } else {
@@ -48,7 +49,7 @@ expenseRoutes.get('/', async (req, res) => {
   }
 });
 
-expenseRoutes.get('/:id/users', async (req, res) => {
+expenseRoutes.get('/:id/users', verifyToken, async (req, res) => {
   try {
     const totalExpense = await getTotalExpense(req.params.id);
     const formatTotalExpense = Object.values(totalExpense[0]).toString();
@@ -71,22 +72,23 @@ expenseRoutes.get('/:id/users', async (req, res) => {
   }
 });
 
-expenseRoutes.get('/:id', async (req, res) => {
+expenseRoutes.get('/:id', verifyToken, async (req, res) => {
   try {
-    const expense = await getExpenseById(req.params.id);
+    const expense = await getExpenseById(req.params.id, req.decodedToken.sub);
     if (expense) {
       res.json({ message: expense });
     } else {
       res.status(404).json({ message: `Could not find expense with given ${req.params.id}` });
     }
   } catch (err) {
+    console.log(err);
     res.status(500).json({ message: 'Failed to get expenses' });
   }
 });
 
 
-expenseRoutes.delete('/:id', async (req, res) => {
-  const expense = await remove(Number(req.params.id));
+expenseRoutes.delete('/:id', verifyToken, async (req, res) => {
+  const expense = await remove(req.params.id, req.decodedToken.sub);
   try {
     if (!expense) {
       return res

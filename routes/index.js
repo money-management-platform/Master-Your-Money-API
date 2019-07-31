@@ -1,7 +1,7 @@
 import express from 'express';
 import userRoutes from './authRoutes';
 import incomeRoutes from './incomeRoutes';
-import expenseRoutes from './expenseRoutes'
+import expenseRoutes from './expenseRoutes';
 
 const route = express.Router();
 

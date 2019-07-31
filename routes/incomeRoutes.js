@@ -1,5 +1,7 @@
 import express from 'express';
 import { getById } from '../models/auth-models';
+import verifyToken from '../middlewares/verifyToken';
+
 import {
   insert,
   getIncomeById,
@@ -11,45 +13,44 @@ import {
 const incomeRoutes = express.Router();
 
 
-incomeRoutes.post('/:id', async (req, res) => {
-  const user = await getById(req.params.id);
+incomeRoutes.post('/', verifyToken, async (req, res) => {
   const { basis_id, description, estimate } = req.body;
   const income = {
-    user_id: req.params.id,
+    user_id: req.decodedToken.sub,
     basis_id,
     description,
     estimate,
   };
 
   try {
-    if (user) {
-      if (income) {
-        const newIncome = await insert(income);
-        const incomeDetails = await getIncomeById(newIncome.id);
-        res.status(201).json({ message: 'new income is created successfully', data: incomeDetails });
-      }
+    const newIncome = await insert(income);
+    const incomeDetails = await getIncomeById(newIncome[0], req.decodedToken.sub);
+    if (income) {
+      res.status(201).json({ message: 'new income is created successfully', data: incomeDetails });
     } else {
       res.status(404).json({ message: `The user with the specified ID ${req.params.id} does not exist.` });
     }
   } catch (error) {
+    console.log(error);
     res.status(500).json({ error: 'There was an error while saving the income to the database' });
   }
 });
 
-incomeRoutes.get('/', async (req, res) => {
+incomeRoutes.get('/', verifyToken, async (req, res) => {
   try {
-    const income = await getIncome();
+    const income = await getIncome(req.decodedToken.sub);
     if (income) {
-      res.json(income);
+      res.json({ message: 'successful, all income details:', data: income });
     } else {
       res.status(404).json({ message: 'No income available' });
     }
   } catch (err) {
+    console.log(err);
     res.status(500).json({ message: 'Failed to get incomes' });
   }
 });
 
-incomeRoutes.get('/:id/users', async (req, res) => {
+incomeRoutes.get('/:id/users', verifyToken, async (req, res) => {
   const user = await getById(req.params.id);
   const totalIncome = await getTotalIncome(req.params.id);
   const formatTotalIncome = Object.values(totalIncome[0]).toString();
@@ -72,22 +73,23 @@ incomeRoutes.get('/:id/users', async (req, res) => {
   }
 });
 
-incomeRoutes.get('/:id', async (req, res) => {
+incomeRoutes.get('/:id', verifyToken, async (req, res) => {
   try {
-    const income = await getIncomeById(req.params.id);
+    const income = await getIncomeById(req.params.id, req.decodedToken.sub);
     if (income) {
-      res.json({ message: income });
+      res.json({ message: 'successful!, expense details:', data: income });
     } else {
       res.status(404).json({ message: `Could not find income with given ${req.params.id}` });
     }
   } catch (err) {
+    console.log(err);
     res.status(500).json({ message: 'Failed to get incomes' });
   }
 });
 
 
-incomeRoutes.delete('/:id', async (req, res) => {
-  const income = await remove(Number(req.params.id));
+incomeRoutes.delete('/:id', verifyToken, async (req, res) => {
+  const income = await remove(req.params.id, req.decodedToken.sub);
   try {
     if (!income) {
       return res
@@ -98,6 +100,7 @@ incomeRoutes.delete('/:id', async (req, res) => {
       .status(200)
       .json({ message: `The user with the ${req.params.id} has been removed` });
   } catch (error) {
+    console.log(error);
     return res.status(500).json({ error: 'The user could not be removed' });
   }
 });

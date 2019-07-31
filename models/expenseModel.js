@@ -1,11 +1,16 @@
 import db from '../utils/dbConfig';
 
-export const getExpense = () => db('expenses')
-  .join('categories', 'categories.id', 'category_id');
-
-export const getExpenseById = id => db('expenses')
+export const getExpense = id => db('expenses')
+  .select('expenses.id', 'expenses.user_id', 'expenses.category_id', 'expenses.description', 'expenses.amount', 'categories.category', 'expenses.created_at')
   .join('categories', 'expenses.category_id', 'categories.id')
-  .where({ 'expenses.id': id })
+  .join('users', 'expenses.user_id', 'users.id')
+  .where({ 'users.id': id });
+
+export const getExpenseById = (id, userId) => db('expenses')
+  .select('expenses.id', 'expenses.user_id', 'expenses.category_id', 'expenses.description', 'expenses.amount', 'categories.category', 'users.firstname', 'users.lastname', 'users.email', 'expenses.created_at')
+  .join('categories', 'expenses.category_id', 'categories.id')
+  .join('users', 'expenses.user_id', 'users.id')
+  .where({ 'expenses.id': id, 'users.id': userId })
   .first();
 
 // eslint-disable-next-line camelcase
@@ -18,13 +23,15 @@ export const getUserByID = id => db('expenses')
   .first();
 
 export const insert = income => db('expenses')
-  .insert(income)
-  .then(ids => getExpenseById(ids[0]));
+  .insert(income);
 
 export const update = (id, changes) => db('expenses')
   .where({ id })
   .update(changes);
 
-export const remove = id => db('expenses')
-  .where('id', id)
-  .del();
+export const remove = (id, userId) => {
+  db('expenses')
+    .join('users', 'users.id', 'user_id')
+    .where({ id, userId })
+    .del();
+};

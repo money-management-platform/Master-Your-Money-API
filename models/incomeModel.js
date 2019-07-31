@@ -1,27 +1,17 @@
 import db from '../utils/dbConfig';
 
-// SELECT SUM(estimate)
-// FROM incomes
-// WHERE user_id=4;
-
-// export function getProject(id) {
-//   return db('actions')
-//     .join('projects', 'projects.id', 'project_id')
-//     .select('actions.*', 'projects.*')
-//     .where('project_id', id);
-// }
-
-export const getIncome = () => db('incomes')
-  .join('bases', 'bases.id', 'basis_id');
-
-// SELECT * , bases.basis
-// FROM incomes
-// INNER JOIN bases ON incomes.basis_id=bases.id
-// where incomes.id = 1;
-
-export const getIncomeById = id => db('incomes')
+export const getIncome = id => db('incomes')
+  .select('incomes.id', 'incomes.user_id', 'incomes.basis_id', 'incomes.description', 'incomes.estimate', 'bases.basis', 'incomes.created_at')
   .join('bases', 'incomes.basis_id', 'bases.id')
-  .where({ 'incomes.id': id })
+  .join('users', 'incomes.user_id', 'users.id')
+  .where({ 'users.id': id });
+
+
+export const getIncomeById = (id, userId) => db('incomes')
+  .select('incomes.id', 'incomes.user_id', 'incomes.basis_id', 'incomes.description', 'incomes.estimate', 'bases.basis', 'users.firstname', 'users.lastname', 'users.email', 'incomes.created_at')
+  .join('bases', 'incomes.basis_id', 'bases.id')
+  .join('users', 'incomes.user_id', 'users.id')
+  .where({ 'incomes.id': id, 'users.id': userId })
   .first();
 
 // eslint-disable-next-line camelcase
@@ -34,13 +24,13 @@ export const getUserByID = id => db('incomes')
   .first();
 
 export const insert = income => db('incomes')
-  .insert(income)
-  .then(ids => getIncomeById(ids[0]));
+  .insert(income);
 
 export const update = (id, changes) => db('incomes')
   .where({ id })
   .update(changes);
 
-export const remove = id => db('incomes')
-  .where('id', id)
+export const remove = (id, userId) => db('incomes')
+  .join('users', 'incomes.user_id', 'users_id')
+  .where({ 'incomes.id': id, 'users.id': userId })
   .del();
