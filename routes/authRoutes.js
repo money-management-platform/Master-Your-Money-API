@@ -5,7 +5,6 @@ import hashPassword from '../helpers/passwordHelper';
 import generateToken from '../helpers/generateToken';
 import verifyToken from '../middlewares/verifyToken';
 
-
 const userRoutes = express.Router();
 
 userRoutes.post('/register', (req, res) => {
@@ -41,8 +40,9 @@ userRoutes.post('/register', (req, res) => {
     });
 });
 
-userRoutes.get('/', (req, res) => {
-  get()
+userRoutes.get('/', verifyToken, (req, res) => {
+  // console.log('...this', req.decodedToken.sub);
+  get(req.decodedToken.sub)
     .then((data) => {
       if (data.length === 0) {
         res.status(404).json({ message: 'users not found' });
