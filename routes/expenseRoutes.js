@@ -50,6 +50,9 @@ expenseRoutes.get('/:id/users', verifyToken, async (req, res) => {
     const totalExpense = await getTotalExpense(req.params.id);
     const formatTotalExpense = Object.values(totalExpense[0]).toString();
     const user = await getById(req.params.id);
+    if (Number(req.params.id) !== Number(req.decodedToken.sub)) {
+      return res.status(404).json({ message: 'Sorry, your user id and request id do not mactch!' });
+    }
     if (user) {
       if (Number(formatTotalExpense) === 0) {
         return res.json({ message: `Hi ${user.lastname} ${user.firstname}! your total income is $0` });
