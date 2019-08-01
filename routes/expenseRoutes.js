@@ -1,6 +1,8 @@
 import express from 'express';
 import { getById } from '../models/auth-models';
 import verifyToken from '../middlewares/verifyToken';
+import IdValidator from '../middlewares/idValidator';
+
 import {
   insert,
   getExpenseById,
@@ -46,7 +48,7 @@ expenseRoutes.get('/', verifyToken, async (req, res) => {
   }
 });
 
-expenseRoutes.get('/:id/users', verifyToken, async (req, res) => {
+expenseRoutes.get('/:id/users', IdValidator, verifyToken, async (req, res) => {
   try {
     const totalExpense = await getTotalExpense(req.params.id);
     const formatTotalExpense = Object.values(totalExpense[0]).toString();
@@ -72,7 +74,7 @@ expenseRoutes.get('/:id/users', verifyToken, async (req, res) => {
   }
 });
 
-expenseRoutes.get('/:id', verifyToken, async (req, res) => {
+expenseRoutes.get('/:id', IdValidator, verifyToken, async (req, res) => {
   try {
     const expense = await getExpenseById(req.params.id, req.decodedToken.sub);
     if (expense) {
@@ -87,7 +89,7 @@ expenseRoutes.get('/:id', verifyToken, async (req, res) => {
 });
 
 
-expenseRoutes.delete('/:id', verifyToken, async (req, res) => {
+expenseRoutes.delete('/:id', IdValidator, verifyToken, async (req, res) => {
   const expense = await remove(req.params.id, req.decodedToken.sub);
   try {
     if (!expense) {
@@ -103,7 +105,7 @@ expenseRoutes.delete('/:id', verifyToken, async (req, res) => {
   }
 });
 
-expenseRoutes.put('/:id', verifyToken, async (req, res) => {
+expenseRoutes.put('/:id', IdValidator, verifyToken, async (req, res) => {
   const { category_id, description, amount } = req.body;
   const expense = {
     category_id,

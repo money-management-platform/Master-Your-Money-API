@@ -1,6 +1,7 @@
 import express from 'express';
 import { getById } from '../models/auth-models';
 import verifyToken from '../middlewares/verifyToken';
+import IdValidator from '../middlewares/idValidator';
 
 import {
   insert,
@@ -48,7 +49,7 @@ incomeRoutes.get('/', verifyToken, async (req, res) => {
   }
 });
 
-incomeRoutes.get('/:id/users', verifyToken, async (req, res) => {
+incomeRoutes.get('/:id/users', IdValidator, verifyToken, async (req, res) => {
   try {
     const user = await getById(req.params.id);
     const totalIncome = await getTotalIncome(req.decodedToken.sub);
@@ -75,7 +76,7 @@ incomeRoutes.get('/:id/users', verifyToken, async (req, res) => {
   }
 });
 
-incomeRoutes.get('/:id', verifyToken, async (req, res) => {
+incomeRoutes.get('/:id', IdValidator, verifyToken, async (req, res) => {
   try {
     const income = await getIncomeById(req.params.id, req.decodedToken.sub);
     if (income) {
@@ -88,7 +89,7 @@ incomeRoutes.get('/:id', verifyToken, async (req, res) => {
   }
 });
 
-incomeRoutes.delete('/:id', verifyToken, async (req, res) => {
+incomeRoutes.delete('/:id', IdValidator, verifyToken, async (req, res) => {
   try {
     const income = await remove(req.params.id, req.decodedToken.sub);
     if (!income) {
@@ -105,7 +106,7 @@ incomeRoutes.delete('/:id', verifyToken, async (req, res) => {
   }
 });
 
-incomeRoutes.put('/:id', verifyToken, async (req, res) => {
+incomeRoutes.put('/:id', IdValidator, verifyToken, async (req, res) => {
   const { basis_id, description, estimate } = req.body;
   const income = {
     basis_id,

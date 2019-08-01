@@ -4,6 +4,7 @@ import { insert, get, getUserByEmail } from '../models/auth-models';
 import hashPassword from '../helpers/passwordHelper';
 import generateToken from '../helpers/generateToken';
 import verifyToken from '../middlewares/verifyToken';
+import loginValidator from  '../middlewares/loginValidator'
 
 const userRoutes = express.Router();
 
@@ -56,7 +57,7 @@ userRoutes.get('/', verifyToken, (req, res) => {
     });
 });
 
-userRoutes.post('/login', async (req, res) => {
+userRoutes.post('/login', loginValidator, async (req, res) => {
   const { email, password: pwd } = req.body;
   const validUser = await getUserByEmail(email);
   const validPassword = validUser.password;
