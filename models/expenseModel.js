@@ -28,14 +28,6 @@ export const insert = income => db('expenses')
 export const update = (id, changes) => db('expenses')
   .where({ id })
   .update(changes);
-
-// export const remove = (id, userId) => {
-//   db('expenses')
-//     .join('users', 'users.id', 'user_id')
-//     .where({ id, userId })
-//     .del();
-// };
-
 export const remove = async (id, userId) => {
   try {
     const expense = await getExpenseById(id, userId);

@@ -20,18 +20,14 @@ expenseRoutes.post('/', verifyToken, async (req, res) => {
     amount,
   };
   try {
-    const user = await getById(req.params.id);
     const newExpense = await insert(expense);
     const expenseDetails = await getExpenseById(newExpense[0], req.decodedToken.sub);
-    if (user) {
-      if (expense) {
-        res.status(201).json({ message: 'new expense is posted successfully', data: expenseDetails });
-      }
+    if (expense) {
+      res.status(201).json({ message: 'new expense is posted successfully', data: expenseDetails });
     } else {
       res.status(404).json({ message: `The user with the specified ID ${req.params.id} does not exist.` });
     }
   } catch (error) {
-    console.log(error);
     res.status(500).json({ error: 'There was an error while saving the expense to the database' });
   }
 });
