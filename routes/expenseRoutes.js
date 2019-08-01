@@ -3,6 +3,7 @@ import { getById } from '../models/auth-models';
 import verifyToken from '../middlewares/verifyToken';
 import IdValidator from '../middlewares/idValidator';
 import expenseValidator from '../middlewares/expenseValidator';
+import { getTotalIncome } from '../models/incomeModel';
 
 import {
   insert,
@@ -15,7 +16,7 @@ import {
 
 const expenseRoutes = express.Router();
 
-expenseRoutes.post('/', verifyToken, expenseValidator, async (req, res) => {
+expenseRoutes.post('/expenses/', verifyToken, expenseValidator, async (req, res) => {
   const { category_id, description, amount } = req.body;
   const expense = {
     user_id: req.decodedToken.sub,
@@ -36,7 +37,7 @@ expenseRoutes.post('/', verifyToken, expenseValidator, async (req, res) => {
   }
 });
 
-expenseRoutes.get('/', verifyToken, async (req, res) => {
+expenseRoutes.get('/expenses/', verifyToken, async (req, res) => {
   try {
     const expense = await getExpense(req.decodedToken.sub);
     if (expense) {
@@ -49,7 +50,7 @@ expenseRoutes.get('/', verifyToken, async (req, res) => {
   }
 });
 
-expenseRoutes.get('/:id/users', IdValidator, verifyToken, async (req, res) => {
+expenseRoutes.get('/expenses/:id/users', IdValidator, verifyToken, async (req, res) => {
   try {
     const totalExpense = await getTotalExpense(req.params.id);
     const formatTotalExpense = Object.values(totalExpense[0]).toString();
@@ -74,7 +75,7 @@ expenseRoutes.get('/:id/users', IdValidator, verifyToken, async (req, res) => {
   }
 });
 
-expenseRoutes.get('/:id', IdValidator, verifyToken, async (req, res) => {
+expenseRoutes.get('/expenses/:id', IdValidator, verifyToken, async (req, res) => {
   try {
     const expense = await getExpenseById(req.params.id, req.decodedToken.sub);
     if (expense) {
@@ -88,7 +89,7 @@ expenseRoutes.get('/:id', IdValidator, verifyToken, async (req, res) => {
 });
 
 
-expenseRoutes.delete('/:id', IdValidator, verifyToken, async (req, res) => {
+expenseRoutes.delete('/expenses/:id', IdValidator, verifyToken, async (req, res) => {
   const expense = await remove(req.params.id, req.decodedToken.sub);
   try {
     if (!expense) {
@@ -104,7 +105,7 @@ expenseRoutes.delete('/:id', IdValidator, verifyToken, async (req, res) => {
   }
 });
 
-expenseRoutes.put('/:id', IdValidator, expenseValidator, verifyToken, async (req, res) => {
+expenseRoutes.put('/expenses/:id', IdValidator, expenseValidator, verifyToken, async (req, res) => {
   const { category_id, description, amount } = req.body;
   const expense = {
     category_id,
@@ -130,5 +131,39 @@ expenseRoutes.put('/:id', IdValidator, expenseValidator, verifyToken, async (req
       .json({ error: 'The expense information could not be updated.' });
   }
 });
+
+expenseRoutes.post('/purchases', verifyToken, async (req, res) => {
+  const { category_id, description, amount } = req.body;
+  const purchase = {
+    user_id: req.decodedToken.sub,
+    category_id,
+    description,
+    amount,
+  };
+  try {
+    const totalIncome = await getTotalIncome(req.decodedToken.sub);
+    const formatTotalIncome = Object.values(totalIncome[0]).toString();
+    const cost = Number(purchase.amount);
+    const currentTotalIncome = Number(formatTotalIncome);
+    const balance = currentTotalIncome - amount;
+    const user = await getById(req.decodedToken.sub);
+    if (cost < currentTotalIncome) {
+      res.status(200).json({
+        message: ` Hi! ${user.firstname} ${user.lastname} you can afford this ${purchase.description} now and your balance will be $${balance}`,
+      });
+    }
+    if (cost > currentTotalIncome) {
+      res.status(200).json({ message: ` Hi! ${user.firstname} ${user.lastname} you will not be able to afford this ${purchase.description} at the moment` });
+    }
+    if (cost === currentTotalIncome) {
+      res.status(200).json({
+        message: ` Hi! ${user.firstname} ${user.lastname} you can afford it, this -- ${purchase.description} now, but you will be left with $${balance}, are you sure you want to do this ?`,
+      });
+    }
+  } catch (error) {
+    res.status(500).json({ error: 'There was an error while making your request' });
+  }
+});
+
 
 export default expenseRoutes;
