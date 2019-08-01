@@ -12,7 +12,6 @@ import {
 
 const incomeRoutes = express.Router();
 
-
 incomeRoutes.post('/', verifyToken, async (req, res) => {
   const { basis_id, description, estimate } = req.body;
   const income = {
@@ -31,7 +30,6 @@ incomeRoutes.post('/', verifyToken, async (req, res) => {
       res.status(404).json({ message: `The user with the specified ID ${req.params.id} does not exist.` });
     }
   } catch (error) {
-    console.log(error);
     res.status(500).json({ error: 'There was an error while saving the income to the database' });
   }
 });
@@ -45,16 +43,19 @@ incomeRoutes.get('/', verifyToken, async (req, res) => {
       res.status(404).json({ message: 'No income available' });
     }
   } catch (err) {
-    console.log(err);
     res.status(500).json({ message: 'Failed to get incomes' });
   }
 });
 
 incomeRoutes.get('/:id/users', verifyToken, async (req, res) => {
-  const user = await getById(req.params.id);
-  const totalIncome = await getTotalIncome(req.params.id);
-  const formatTotalIncome = Object.values(totalIncome[0]).toString();
   try {
+    const user = await getById(req.params.id);
+    const totalIncome = await getTotalIncome(req.decodedToken.sub);
+    const formatTotalIncome = Object.values(totalIncome[0]).toString();
+
+    if (Number(req.params.id) !== Number(req.decodedToken.sub)) {
+      return res.status(404).json({ message: 'Sorry, your user id and request id do not mactch!' });
+    } 
     if (typeof user === 'undefined') {
       return res.status(404).json({ message: `Could not find totalIncome with given ${req.params.id}` });
     }
@@ -82,26 +83,26 @@ incomeRoutes.get('/:id', verifyToken, async (req, res) => {
       res.status(404).json({ message: `Could not find income with given ${req.params.id}` });
     }
   } catch (err) {
-    console.log(err);
     res.status(500).json({ message: 'Failed to get incomes' });
   }
 });
 
-
 incomeRoutes.delete('/:id', verifyToken, async (req, res) => {
-  const income = await remove(req.params.id, req.decodedToken.sub);
   try {
+    const income = await remove(req.params.id, req.decodedToken.sub);
+    console.log('ctrl inc', income);
+    console.log('..user', req.decodedToken.sub);
     if (!income) {
       return res
         .status(404)
-        .json({ message: `The user with the ${req.params.id} does not exist.` });
+        .json({ message: `The income with the ${req.params.id} does not exist.` });
     }
     res
       .status(200)
-      .json({ message: `The user with the ${req.params.id} has been removed` });
+      .json({ message: `The income with the ${req.params.id} has been removed` });
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ error: 'The user could not be removed' });
+    return res.status(500).json({ error: 'The income could not be removed' });
   }
 });
 

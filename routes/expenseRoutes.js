@@ -93,13 +93,13 @@ expenseRoutes.delete('/:id', verifyToken, async (req, res) => {
     if (!expense) {
       return res
         .status(404)
-        .json({ message: `The user with the ${req.params.id} does not exist.` });
+        .json({ message: `The expenses with the ${req.params.id} does not exist.` });
     }
     res
       .status(200)
-      .json({ message: `The user with the ${req.params.id} has been removed` });
+      .json({ message: `The expenses with the ${req.params.id} has been removed` });
   } catch (error) {
-    return res.status(500).json({ error: 'The user could not be removed' });
+    return res.status(500).json({ error: 'The expenses could not be removed' });
   }
 });
 

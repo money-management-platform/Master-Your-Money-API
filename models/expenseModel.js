@@ -29,9 +29,26 @@ export const update = (id, changes) => db('expenses')
   .where({ id })
   .update(changes);
 
-export const remove = (id, userId) => {
-  db('expenses')
-    .join('users', 'users.id', 'user_id')
-    .where({ id, userId })
-    .del();
+// export const remove = (id, userId) => {
+//   db('expenses')
+//     .join('users', 'users.id', 'user_id')
+//     .where({ id, userId })
+//     .del();
+// };
+
+export const remove = async (id, userId) => {
+  try {
+    const expense = await getExpenseById(id, userId);
+    if (!expense) {
+      return null;
+    }
+    if (expense.user_id === userId) {
+      const removeItem = await db('expenses')
+        .where({ id })
+        .del();
+      return removeItem;
+    }
+  } catch (error) {
+    return 'unable to remove';
+  }
 };

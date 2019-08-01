@@ -30,7 +30,19 @@ export const update = (id, changes) => db('incomes')
   .where({ id })
   .update(changes);
 
-export const remove = (id, userId) => db('incomes')
-  .join('users', 'incomes.user_id', 'users_id')
-  .where({ 'incomes.id': id, 'users.id': userId })
-  .del();
+export const remove = async (id, userId) => {
+  try {
+    const income = await getIncomeById(id, userId);
+    if (!income) {
+      return null;
+    }
+    if (income.user_id === userId) {
+      const removeItem = await db('incomes')
+        .where({ id })
+        .del();
+      return removeItem;
+    }
+  } catch (error) {
+    return 'unable to emove';
+  }
+};
