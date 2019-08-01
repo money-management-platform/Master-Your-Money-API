@@ -8,6 +8,7 @@ import {
   getIncome,
   getTotalIncome,
   remove,
+  update,
 } from '../models/incomeModel';
 
 const incomeRoutes = express.Router();
@@ -55,7 +56,7 @@ incomeRoutes.get('/:id/users', verifyToken, async (req, res) => {
 
     if (Number(req.params.id) !== Number(req.decodedToken.sub)) {
       return res.status(404).json({ message: 'Sorry, your user id and request id do not mactch!' });
-    } 
+    }
     if (typeof user === 'undefined') {
       return res.status(404).json({ message: `Could not find totalIncome with given ${req.params.id}` });
     }
@@ -90,8 +91,6 @@ incomeRoutes.get('/:id', verifyToken, async (req, res) => {
 incomeRoutes.delete('/:id', verifyToken, async (req, res) => {
   try {
     const income = await remove(req.params.id, req.decodedToken.sub);
-    console.log('ctrl inc', income);
-    console.log('..user', req.decodedToken.sub);
     if (!income) {
       return res
         .status(404)
@@ -103,6 +102,33 @@ incomeRoutes.delete('/:id', verifyToken, async (req, res) => {
   } catch (error) {
     console.log(error);
     return res.status(500).json({ error: 'The income could not be removed' });
+  }
+});
+
+incomeRoutes.put('/:id', verifyToken, async (req, res) => {
+  const { basis_id, description, estimate } = req.body;
+  const income = {
+    basis_id,
+    description,
+    estimate,
+  };
+
+  try {
+    const item = await getIncomeById(req.params.id, req.decodedToken.sub);
+    if (!item) {
+      return res
+        .status(404)
+        .json({ message: `income with ID:${req.params.id} not found` });
+    }
+    await update(item.id, income);
+    const editedIncome = await getIncomeById(item.id, req.decodedToken.sub);
+    return res
+      .status(200)
+      .json({ message: 'income updated successfully', data: editedIncome });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ error: 'The income information could not be updated.' });
   }
 });
 

@@ -7,6 +7,7 @@ import {
   getExpense,
   getTotalExpense,
   remove,
+  update,
 } from '../models/expenseModel';
 
 const expenseRoutes = express.Router();
@@ -55,7 +56,7 @@ expenseRoutes.get('/:id/users', verifyToken, async (req, res) => {
     }
     if (user) {
       if (Number(formatTotalExpense) === 0) {
-        return res.json({ message: `Hi ${user.lastname} ${user.firstname}! your total income is $0` });
+        return res.json({ message: `Hi ${user.lastname} ${user.firstname}! your total expense is $0` });
       }
       if (totalExpense && totalExpense !== 0) {
         res.json({ message: `Hi ${user.lastname} ${user.firstname}! your total expense is: $${formatTotalExpense}` });
@@ -99,6 +100,33 @@ expenseRoutes.delete('/:id', verifyToken, async (req, res) => {
       .json({ message: `The expenses with the ${req.params.id} has been removed` });
   } catch (error) {
     return res.status(500).json({ error: 'The expenses could not be removed' });
+  }
+});
+
+expenseRoutes.put('/:id', verifyToken, async (req, res) => {
+  const { category_id, description, amount } = req.body;
+  const expense = {
+    category_id,
+    description,
+    amount,
+  };
+
+  try {
+    const item = await getExpenseById(req.params.id, req.decodedToken.sub);
+    if (!item) {
+      return res
+        .status(404)
+        .json({ message: `expense with ID:${req.params.id} not found` });
+    }
+    await update(item.id, expense);
+    const editedExpense = await getExpenseById(item.id, req.decodedToken.sub);
+    return res
+      .status(200)
+      .json({ message: 'expense updated successfully', data: editedExpense });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ error: 'The expense information could not be updated.' });
   }
 });
 
