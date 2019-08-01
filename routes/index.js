@@ -8,6 +8,6 @@ const route = express.Router();
 route.use('/auth', userRoutes);
 route.use('/users', userRoutes);
 route.use('/incomes', incomeRoutes);
-route.use('/expenses', expenseRoutes);
+route.use('/', expenseRoutes);
 
 export default route;

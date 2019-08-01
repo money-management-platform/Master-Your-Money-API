@@ -4,10 +4,12 @@ import { insert, get, getUserByEmail } from '../models/auth-models';
 import hashPassword from '../helpers/passwordHelper';
 import generateToken from '../helpers/generateToken';
 import verifyToken from '../middlewares/verifyToken';
+import loginValidator from '../middlewares/loginValidator';
+import registrationValidator from '../middlewares/registrationValidator';
 
 const userRoutes = express.Router();
 
-userRoutes.post('/register', (req, res) => {
+userRoutes.post('/register', registrationValidator, (req, res) => {
   const {
     firstname, lastname, email, password: pwd, address, occupation, phone, marital_status,
   } = req.body;
@@ -56,7 +58,7 @@ userRoutes.get('/', verifyToken, (req, res) => {
     });
 });
 
-userRoutes.post('/login', async (req, res) => {
+userRoutes.post('/login', loginValidator, async (req, res) => {
   const { email, password: pwd } = req.body;
   const validUser = await getUserByEmail(email);
   const validPassword = validUser.password;

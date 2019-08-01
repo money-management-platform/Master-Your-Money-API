@@ -1,6 +1,8 @@
 import express from 'express';
 import { getById } from '../models/auth-models';
 import verifyToken from '../middlewares/verifyToken';
+import IdValidator from '../middlewares/idValidator';
+import incomeValidator from '../middlewares/incomeValidator';
 
 import {
   insert,
@@ -13,7 +15,7 @@ import {
 
 const incomeRoutes = express.Router();
 
-incomeRoutes.post('/', verifyToken, async (req, res) => {
+incomeRoutes.post('/', incomeValidator, verifyToken, async (req, res) => {
   const { basis_id, description, estimate } = req.body;
   const income = {
     user_id: req.decodedToken.sub,
@@ -48,7 +50,7 @@ incomeRoutes.get('/', verifyToken, async (req, res) => {
   }
 });
 
-incomeRoutes.get('/:id/users', verifyToken, async (req, res) => {
+incomeRoutes.get('/:id/users', IdValidator, verifyToken, async (req, res) => {
   try {
     const user = await getById(req.params.id);
     const totalIncome = await getTotalIncome(req.decodedToken.sub);
@@ -75,7 +77,7 @@ incomeRoutes.get('/:id/users', verifyToken, async (req, res) => {
   }
 });
 
-incomeRoutes.get('/:id', verifyToken, async (req, res) => {
+incomeRoutes.get('/:id', IdValidator, verifyToken, async (req, res) => {
   try {
     const income = await getIncomeById(req.params.id, req.decodedToken.sub);
     if (income) {
@@ -88,7 +90,7 @@ incomeRoutes.get('/:id', verifyToken, async (req, res) => {
   }
 });
 
-incomeRoutes.delete('/:id', verifyToken, async (req, res) => {
+incomeRoutes.delete('/:id', IdValidator, verifyToken, async (req, res) => {
   try {
     const income = await remove(req.params.id, req.decodedToken.sub);
     if (!income) {
@@ -100,12 +102,11 @@ incomeRoutes.delete('/:id', verifyToken, async (req, res) => {
       .status(200)
       .json({ message: `The income with the ${req.params.id} has been removed` });
   } catch (error) {
-    console.log(error);
     return res.status(500).json({ error: 'The income could not be removed' });
   }
 });
 
-incomeRoutes.put('/:id', verifyToken, async (req, res) => {
+incomeRoutes.put('/:id', IdValidator, incomeValidator, verifyToken, async (req, res) => {
   const { basis_id, description, estimate } = req.body;
   const income = {
     basis_id,
