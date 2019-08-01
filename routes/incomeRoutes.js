@@ -2,6 +2,7 @@ import express from 'express';
 import { getById } from '../models/auth-models';
 import verifyToken from '../middlewares/verifyToken';
 import IdValidator from '../middlewares/idValidator';
+import incomeValidator from '../middlewares/incomeValidator';
 
 import {
   insert,
@@ -14,7 +15,7 @@ import {
 
 const incomeRoutes = express.Router();
 
-incomeRoutes.post('/', verifyToken, async (req, res) => {
+incomeRoutes.post('/', incomeValidator, verifyToken, async (req, res) => {
   const { basis_id, description, estimate } = req.body;
   const income = {
     user_id: req.decodedToken.sub,
@@ -101,12 +102,11 @@ incomeRoutes.delete('/:id', IdValidator, verifyToken, async (req, res) => {
       .status(200)
       .json({ message: `The income with the ${req.params.id} has been removed` });
   } catch (error) {
-    console.log(error);
     return res.status(500).json({ error: 'The income could not be removed' });
   }
 });
 
-incomeRoutes.put('/:id', IdValidator, verifyToken, async (req, res) => {
+incomeRoutes.put('/:id', IdValidator, incomeValidator, verifyToken, async (req, res) => {
   const { basis_id, description, estimate } = req.body;
   const income = {
     basis_id,

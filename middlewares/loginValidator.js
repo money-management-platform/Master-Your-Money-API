@@ -5,12 +5,12 @@ const loginValidator = (req, res, next) => {
   };
   if (typeof user.email === 'undefined' || typeof user.password === 'undefined') {
     return res
-      .status(404)
+      .status(401)
       .json({ errorMessage: 'Please email or password is missing' });
   }
   if (user.email.trim() === '' || user.password.trim() === '') {
     return res
-      .status(404)
+      .status(401)
       .json({ errorMessage: 'Please provide email and password!' });
   }
   next();

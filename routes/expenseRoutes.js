@@ -2,6 +2,7 @@ import express from 'express';
 import { getById } from '../models/auth-models';
 import verifyToken from '../middlewares/verifyToken';
 import IdValidator from '../middlewares/idValidator';
+import expenseValidator from '../middlewares/expenseValidator';
 
 import {
   insert,
@@ -14,7 +15,7 @@ import {
 
 const expenseRoutes = express.Router();
 
-expenseRoutes.post('/', verifyToken, async (req, res) => {
+expenseRoutes.post('/', verifyToken, expenseValidator, async (req, res) => {
   const { category_id, description, amount } = req.body;
   const expense = {
     user_id: req.decodedToken.sub,
@@ -69,7 +70,6 @@ expenseRoutes.get('/:id/users', IdValidator, verifyToken, async (req, res) => {
       res.status(404).json({ message: `Hi there!, the user with id:${req.params.id} does not exist` });
     }
   } catch (err) {
-    console.log(err);
     res.status(500).json({ message: 'Failed to get totalExpenses' });
   }
 });
@@ -83,7 +83,6 @@ expenseRoutes.get('/:id', IdValidator, verifyToken, async (req, res) => {
       res.status(404).json({ message: `Could not find expense with given ${req.params.id}` });
     }
   } catch (err) {
-    console.log(err);
     res.status(500).json({ message: 'Failed to get expenses' });
   }
 });
@@ -105,7 +104,7 @@ expenseRoutes.delete('/:id', IdValidator, verifyToken, async (req, res) => {
   }
 });
 
-expenseRoutes.put('/:id', IdValidator, verifyToken, async (req, res) => {
+expenseRoutes.put('/:id', IdValidator, expenseValidator, verifyToken, async (req, res) => {
   const { category_id, description, amount } = req.body;
   const expense = {
     category_id,
