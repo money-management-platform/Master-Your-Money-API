@@ -16,7 +16,7 @@ import {
 
 const expenseRoutes = express.Router();
 
-expenseRoutes.post('/expenses/', verifyToken, expenseValidator, async (req, res) => {
+expenseRoutes.post('/expenses', verifyToken, expenseValidator, async (req, res) => {
   const { category_id, description, amount } = req.body;
   const expense = {
     user_id: req.decodedToken.sub,
@@ -33,6 +33,7 @@ expenseRoutes.post('/expenses/', verifyToken, expenseValidator, async (req, res)
       res.status(404).json({ message: `The user with the specified ID ${req.params.id} does not exist.` });
     }
   } catch (error) {
+    console.log(error);
     res.status(500).json({ error: 'There was an error while saving the expense to the database' });
   }
 });
